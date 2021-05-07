@@ -1,0 +1,14 @@
+input_img:
+  rome.jpg
+img_size:
+  !!python/tuple [4096,4177]
+step_size:
+  128 #For cae method: 128
+tile_size:
+  !!python/tuple [128,128,3]
+
+model:
+  cae
+trained_path:
+  cae_trained.pth
+

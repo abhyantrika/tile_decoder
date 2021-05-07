@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+ <link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">
+
+</head>
+
+<body>
+
+<h1>Image Zoom</h1>
+
+
+
+<p>Mouse over the image:</p>
+
+<div class="img-zoom-container">
+<!--   <img id="myimage" src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/University_of_Maryland_seal.svg/1200px-University_of_Maryland_seal.svg.png" width=300px>
+ --> 
+  <img id="myimage" src="{{url_for('static', filename='images/rome.jpg')}}" >
+  <div id="myresult" class="img-zoom-result"></div>
+</div>
+
+<p>The image must be placed inside a container with relative positioning.</p>
+<p>The result can be put anywhere on the page, but must have the class name "img-zoom-result".</p>
+<p>Make sure both the image and the result have IDs. These IDs are used when a javaScript initiates the zoom effect.</p>
+
+<script src="{{url_for('static', filename='js/main.js')}}"></script>
+</body>
+
+</html>
