@@ -12,7 +12,9 @@ from collections import defaultdict
 import re 
 import patchify
 import utils
-
+import base64
+from io import BytesIO
+from PIL import Image
 
 #app = Flask(__name__,template_folder='.')
 app = Flask(__name__)
@@ -36,9 +38,15 @@ def decode():
 
 	tile_x,tile_y = (0,0)
 	decoded_numpy_image = utils.decode(model,latent_code[tile_x][tile_y])
-	#base64 encoding.
 
-	return decoded_numpy_image
+	#base64 encoding.
+	pil_img = Image.fromarray(decoded_numpy_image)
+	im_file = BytesIO()
+	pil_img.save(im_file, format="JPEG")
+	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
+	im_b64 = base64.b64encode(im_bytes)
+
+	return im_b64
 
 
 # @app.route('/')

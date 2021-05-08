@@ -5,6 +5,10 @@ from PIL import Image
 import yaml 
 import pickle
 import models
+import base64
+from io import BytesIO
+from PIL import Image
+
 
 def load_model(config):
 	if config['model'] =='cae':
@@ -51,7 +55,7 @@ def to_torch(patches):
 	return patches
 
 def to_numpy(tensor):
-	tensor = torch.squeeze(tensor).cpu().detach().permute(1,2,0)
+	tensor = torch.squeeze(tensor).cpu().detach().permute(1,2,0).numpy()
 	return tensor
 
 def decode(model,latent):
@@ -59,7 +63,7 @@ def decode(model,latent):
 		output = model.decode(latent)
 	output_tile = to_numpy(output)
 	output_tile = output_tile * 255
-	output_tile = output_tile.astype(np.uint16)
+	output_tile = output_tile.astype(np.uint8)
 	return output_tile
 
 
@@ -92,4 +96,17 @@ if __name__ =='__main__':
 	#patches = to_torch(patches)
 	model = load_model(config)
 	encoders = get_encoders(model,config)
+
+	tile_x,tile_y = (0,0)
+	decoded_numpy_image = decode(model,encoders[tile_x][tile_y])
+	
+	#print(decoded_numpy_image)
+	
+	#base64 encoding.
+	pil_img = Image.fromarray(decoded_numpy_image)
+
+	im_file = BytesIO()
+	pil_img.save(im_file, format="JPEG")
+	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
+	im_b64 = base64.b64encode(im_bytes)
 
