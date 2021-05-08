@@ -31,13 +31,16 @@ def renderPage():
 
 @app.route('/decode')
 def decode():
+	import math 
 	#API for decoding.
 
-	#tile_coord = request.args.get('coordinates').strip()
-	#tile_x,tile_y = tile_coord
-
-	tile_x,tile_y = (0,0)
-	decoded_numpy_image = utils.decode(model,latent_code[tile_x][tile_y])
+	binned_tile_x = math.floor(float(request.args.get('coordinateX')))
+	binned_tile_y = math.floor(float(request.args.get('coordinateY')))
+	# tile_x,tile_y = (0,0)
+	if config['model'] =='cae':
+		binned_tile_x = binned_tile_x % 32 
+		binned_tile_y = binned_tile_y % 32
+	decoded_numpy_image = utils.decode(model,latent_code[binned_tile_x][binned_tile_y])
 
 	#base64 encoding.
 	pil_img = Image.fromarray(decoded_numpy_image)
@@ -45,8 +48,7 @@ def decode():
 	pil_img.save(im_file, format="JPEG")
 	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
 	im_b64 = base64.b64encode(im_bytes)
-
-	return im_b64
+	return Response(response=im_b64, status=200, mimetype='image/jpeg')
 
 
 # @app.route('/')

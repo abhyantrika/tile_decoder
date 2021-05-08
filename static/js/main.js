@@ -4,7 +4,7 @@ function imageZoom(imgID, resultID) {
   console.log(img,' Here ')
   result = document.getElementById(resultID);
   /*create lens:*/
-  console.log(result,' Here ')
+  // console.log(result,' Here ')
   lens = document.createElement("DIV");
   lens.setAttribute("class", "img-zoom-lens");
   console.log("image width",img.offsetWidth)
@@ -15,8 +15,8 @@ function imageZoom(imgID, resultID) {
   /*calculate the ratio between result DIV and lens:*/
   cx = result.offsetWidth / lens.offsetWidth;
   cy = result.offsetHeight / lens.offsetHeight;
-  console.log("cx",cx);
-  console.log("cy",cy);
+  // console.log("cx",cx);
+  // console.log("cy",cy);
   /*set background properties for the result DIV:*/
   result.style.backgroundImage = "url('" + img.src + "')";
   result.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
@@ -49,6 +49,16 @@ function imageZoom(imgID, resultID) {
     if (y < 0) {
       y = 0;
     }
+    let url = new URL("http://localhost:8000/decode");
+    url.search = new URLSearchParams({"coordinateX":x, "coordinateY":y}).toString();
+    fetch(url,{"credentials": "same-origin"})
+      .then(response => response.blob())
+      .then(blob => blob.text())
+      .then(txt => {
+        console.log(txt);
+        result.style.backgroundImage = "url('data:image/jpeg;base64, " + txt + "')";
+      })
+
     /*set the position of the lens:*/
     lens.style.left = x + "px";
     lens.style.top = y + "px";
@@ -65,7 +75,7 @@ function imageZoom(imgID, resultID) {
     /*calculate the cursor's x and y coordinates, relative to the image:*/
     x = e.pageX - a.left;
     y = e.pageY - a.top;
-    console.log(x,', ',y)
+    // console.log(x,', ',y)
     //console.log(y)
     /*consider any page scrolling:*/
     x = x - window.pageXOffset;
