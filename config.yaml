@@ -1,7 +1,7 @@
 input_img:
-  rome.jpg
+  resized_rome.png
 img_size:
-  !!python/tuple [4096,4177]
+  !!python/tuple [4096,4224] #[4096,4177]
 step_size:
   128 #For cae method: 128
 tile_size:
@@ -11,7 +11,7 @@ final_img_size:
   !!python/tuple [4096,4224]
 
 patch_tile_size:
-  !!python/tuple [32,33]
+  !!python/tuple [33,32]
 
 model:
   cae
