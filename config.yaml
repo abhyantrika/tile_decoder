@@ -7,6 +7,12 @@ step_size:
 tile_size:
   !!python/tuple [128,128,3]
 
+final_img_size:
+  !!python/tuple [4096,4224]
+
+patch_tile_size:
+  !!python/tuple [32,33]
+
 model:
   cae
 trained_path:
