@@ -67,7 +67,7 @@ def decode_cae(model,latent):
 	return output_tile
 
 
-def get_encoders(model,config):
+def get_encoders_cae(model,config):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	patches = get_patches(config)
 	size = patches.shape
@@ -111,6 +111,52 @@ def decode_all_cae(encoders,model,config):
 	pil_img = Image.fromarray(out_img)
 	pil_img.save('resources/out_decoded.jpg')
 
+
+def get_encoders_compress_ai(model,config):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    patches = get_patches(config)
+    size = patches.shape
+    patches = to_torch(patches)
+    encoded = []
+    for i in range(len(patches)):
+        x = patches[i].unsqueeze(0).to(device).float()
+        with torch.no_grad():
+            out = model.compress(x)
+        encoded.append(out)    
+    print("Encoders generated.")
+
+    return encoded
+
+def decode_compress_ai(model,latent):
+	with torch.no_grad():
+		output = model.decompress(latent['strings'],latent['shape'])
+	output_tile = to_numpy(output)
+	output_tile = output_tile * 255
+	output_tile = output_tile.astype(np.uint8)
+	return output_tile
+
+
+
+def decode_all_compress_ai(encoders,model,config):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu' 
+
+    decoded = []
+    for i in range(config['patch_tile_size'][0]*config['patch_tile_size'][1]):
+            with torch.no_grad():
+                out = model.decompress(encoders[i]["strings"], encoders[i]["shape"])
+            decoded.append(out['x_hat'])
+
+    decoded = torch.stack(decoded)
+    dec_shape = decoded.shape 
+    decoded = decoded.view(config['patch_tile_size'][0],config['patch_tile_size'][1],dec_shape[1],dec_shape[2],dec_shape[3],dec_shape[4])
+    decoded = decoded.permute(0,1,2,4,5,3).cpu().detach().numpy()
+
+    out_img = patchify.unpatchify(decoded,(config['img_size'][1],config['img_size'][0],3)) #opposite notation. H,W
+    out_img = out_img*255
+    out_img = out_img.astype(np.uint8)
+
+    pil_img = Image.fromarray(out_img)
+    pil_img.save('resources/out_decoded.jpg')
 
 if __name__ =='__main__':
 	with open('config.yaml') as fout:
