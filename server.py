@@ -29,8 +29,8 @@ latent_code = utils.get_encoders(model,config)
 def renderPage():
 	return render_template("index.html")
 
-@app.route('/decode')
-def decode():
+@app.route('/decode_cae')
+def decode_cae():
 	#API for decoding.
 
 	#tile_coord = request.args.get('coordinates').strip()

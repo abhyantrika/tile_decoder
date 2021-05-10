@@ -165,6 +165,7 @@ class CAE(nn.Module):
         )
 
     def forward(self, x):
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         ec1 = self.e_conv_1(x)
         ec2 = self.e_conv_2(ec1)
         eblock1 = self.e_block_1(ec2) + ec2
@@ -174,9 +175,9 @@ class CAE(nn.Module):
 
         # stochastic binarization
         with torch.no_grad():
-            rand = torch.rand(ec3.shape).cuda()
+            rand = torch.rand(ec3.shape).to(device)
             prob = (1 + ec3) / 2
-            eps = torch.zeros(ec3.shape).cuda()
+            eps = torch.zeros(ec3.shape).to(device)
             eps[rand <= prob] = (1 - ec3)[rand <= prob]
             eps[rand > prob] = (-ec3 - 1)[rand > prob]
 

@@ -11,14 +11,14 @@ from PIL import Image
 
 
 def load_model(config):
+	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	if config['model'] =='cae':
 		from models import cae_32
 		model = cae_32.CAE()
 
-	state_dict = torch.load('resources/'+config['trained_path'])
+	state_dict = torch.load('resources/'+config['trained_path'],map_location=device)
 	model.load_state_dict(state_dict)
 	
-	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	model = model.to(device)
 
 	print('loading: ',config['model'])
@@ -74,7 +74,7 @@ def get_encoders(model,config):
 	patches = to_torch(patches)
 	encoded = []
 	for i in range(len(patches)):
-		x = patches[i].unsqueeze(0).cuda().float()
+		x = patches[i].unsqueeze(0).to(device).float()
 		with torch.no_grad():
 			out = model(x)
 		encoded.append(model.encoded.byte())
