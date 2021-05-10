@@ -22,8 +22,11 @@ app = Flask(__name__)
 with open('config.yaml') as fout:
   config = yaml.load(fout,Loader=yaml.FullLoader) 
 
-model = utils.load_model(config)
-latent_code = utils.get_encoders(model,config)
+cae_model = utils.load_cae_model(config)
+cae_latent_code = utils.get_encoders(model,config)
+
+
+
 
 @app.route('/')
 def renderPage():
@@ -37,7 +40,7 @@ def decode_cae():
 	#tile_x,tile_y = tile_coord
 
 	tile_x,tile_y = (0,0)
-	decoded_numpy_image = utils.decode(model,latent_code[tile_x][tile_y])
+	decoded_numpy_image = utils.decode(model,cae_latent_code[tile_x][tile_y])
 
 	#base64 encoding.
 	pil_img = Image.fromarray(decoded_numpy_image)
@@ -47,11 +50,6 @@ def decode_cae():
 	im_b64 = base64.b64encode(im_bytes)
 
 	return im_b64
-
-
-# @app.route('/')
-# def renderPage():
-#   return render_template("index.html")
 
 
 

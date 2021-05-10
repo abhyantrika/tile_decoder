@@ -10,7 +10,7 @@ from io import BytesIO
 from PIL import Image
 
 
-def load_model(config):
+def load_cae_model(config):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	if config['model'] =='cae':
 		from models import cae_32
@@ -58,7 +58,7 @@ def to_numpy(tensor):
 	tensor = torch.squeeze(tensor).cpu().detach().permute(1,2,0).numpy()
 	return tensor
 
-def decode(model,latent):
+def decode_cae(model,latent):
 	with torch.no_grad():
 		output = model.decode(latent)
 	output_tile = to_numpy(output)
@@ -88,7 +88,7 @@ def get_encoders(model,config):
 
 	return encoded
 
-def decode_all(encoders,model,config):
+def decode_all_cae(encoders,model,config):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'	
 	enc_shape = encoders.shape
 
@@ -118,11 +118,11 @@ if __name__ =='__main__':
 
 	#patches = get_patches(config)
 	#patches = to_torch(patches)
-	model = load_model(config)
+	model = load_cae_model(config)
 	encoders = get_encoders(model,config)
 
 	tile_x,tile_y = (0,0)
-	decoded_numpy_image = decode(model,encoders[tile_x][tile_y])
+	decoded_numpy_image = decode_cae(model,encoders[tile_x][tile_y])
 	
 	#print(decoded_numpy_image)
 	
