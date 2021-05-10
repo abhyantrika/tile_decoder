@@ -88,6 +88,30 @@ def get_encoders(model,config):
 
 	return encoded
 
+def decode_all(encoders,model,config):
+	device = 'cuda' if torch.cuda.is_available() else 'cpu'	
+	enc_shape = encoders.shape
+
+	decoded = []
+	for i in range(enc_shape[0]):
+		for j in range(enc_shape[1]):
+			with torch.no_grad():
+				out = model.decode(encoders[i][j])
+			decoded.append(out)
+
+	decoded = torch.stack(decoded)
+	dec_shape = decoded.shape 
+	decoded = decoded.view(enc_shape[0],enc_shape[1],dec_shape[1],dec_shape[2],dec_shape[3],dec_shape[4])
+	decoded = decoded.permute(0,1,2,4,5,3).cpu().detach().numpy()
+
+	out_img = patchify.unpatchify(decoded,(config['img_size'][1],config['img_size'][0],3)) #opposite notation. H,W
+	out_img = out_img*255
+	out_img = out_img.astype(np.uint8)
+
+	pil_img = Image.fromarray(out_img)
+	pil_img.save('resources/out_decoded.jpg')
+
+
 if __name__ =='__main__':
 	with open('config.yaml') as fout:
 	  config = yaml.load(fout,Loader=yaml.FullLoader) 
