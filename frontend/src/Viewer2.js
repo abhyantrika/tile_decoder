@@ -114,48 +114,30 @@ class Viewer2 extends React.Component {
         originResizeResult.style.backgroundSize = (originalImg.width * cx) + "px " + (originalImg.height * cy) + "px";
         originResizeResult.style.backgroundPosition = "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px";
 
-        caeResult.style.backgroundImage = "url('" + "https://raw.githubusercontent.com/abhyantrika/tile_decoder/master/resources/out_decoded.jpg" + "')";
-        caeResult.style.backgroundSize = (originalImg.width * cx) + "px " + (originalImg.height * cy) + "px";
-        caeResult.style.backgroundPosition = "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px";
 
-        // cpaResult.style.backgroundImage = "url('" + "https://raw.githubusercontent.com/abhyantrika/tile_decoder/master/resources/out_decoded.jpg" + "')";
-        // cpaResult.style.backgroundSize = (originalImg.width * cx) + "px " + (originalImg.height * cy) + "px";
-        // cpaResult.style.backgroundPosition = "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px";
+        getImage("decode_cae", this.state.current_selected)
+            .then(response => response.json())
+            .then(body => {
+                const imgHex = body['data2']
+                const hex = Uint8Array.from(Buffer.from(imgHex, 'hex'));
+                let nb = new Blob([hex], { type: "image/jpeg" })
+                // console.log(imgHex)
+                return URL.createObjectURL(nb)
+            })
+            .then(url => {
+                console.log(url)
+                caeResult.style.backgroundImage = "url('" + url + "')";
+            })
+            .catch(err => console.error(err));
 
         getImage("decode_compressai", this.state.current_selected)
-            .then(response => response.body)
-            .then(data => {
-                return data.getReader().read();
-                // return new ReadableStream({
-                //     start(controller) {
-                //         return pump();
-                //         function pump() {
-                //             return reader.read().then(({ done, value }) => {
-                //                 // When no more data needs to be consumed, close the stream
-                //                 if (done) {
-                //                     controller.close();
-                //                     return;
-                //                 }
-                //                 // Enqueue the next data chunk into our target stream
-                //                 controller.enqueue(value);
-                //                 return pump();
-                //             });
-                //         }
-                //     }
-                // })
-            })
-            // .then(stream => {
-            //     console.log(stream)
-            // })
-            .then(response => {
-                // const content = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 5, 0, 0, 0, 5, 8, 6, 0, 0, 0, 141, 111, 38, 229, 0, 0, 0, 28, 73, 68, 65, 84, 8, 215, 99, 248, 255, 255, 63, 195, 127, 6, 32, 5, 195, 32, 18, 132, 208, 49, 241, 130, 88, 205, 4, 0, 14, 245, 53, 203, 209, 142, 14, 31, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
-                // let nb = new Blob([content], { type: "image/jpeg" })
-                console.log(response.value)
-                let nb = new Blob([response.value], { type: "image/png" })
-                return nb
-            })
-            .then(blob => {
-                return URL.createObjectURL(blob)
+            .then(response => response.json())
+            .then(body => {
+                const imgHex = body['data2']
+                const hex = Uint8Array.from(Buffer.from(imgHex, 'hex'));
+                let nb = new Blob([hex], { type: "image/jpeg" })
+                // console.log(imgHex)
+                return URL.createObjectURL(nb)
             })
             .then(url => {
                 console.log(url)

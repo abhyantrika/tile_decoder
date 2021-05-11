@@ -49,7 +49,7 @@ def decode_cae():
 	x = int(request.args.get('x'))
 	y = int(request.args.get('y'))
 
-	tile_x,tile_y = (0,0)
+	tile_x,tile_y = (x,y)
 	decoded_numpy_image = utils.decode_cae(cae_model,cae_latent_code[tile_x][tile_y])
 
 	#base64 encoding.
@@ -59,7 +59,10 @@ def decode_cae():
 	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
 	im_b64 = base64.b64encode(im_bytes)
 
-	return send_file(io.BytesIO(im_b64),mimetype='image/jpeg',attachment_filename="cae_output.jpg")
+	res = {"data":im_b64.hex(),"data2":im_bytes.hex()}
+	resp = Response(response=json.dumps(res),status=200,mimetype='application/json')
+	return resp
+	# return send_file(io.BytesIO(im_b64),mimetype='image/jpeg',attachment_filename="cae_output.jpg")
 
 
 @app.route('/decode_compressai')
@@ -72,7 +75,7 @@ def decode_compressai():
 	x = int(request.args.get('x'))
 	y = int(request.args.get('y'))
 
-	tile_x,tile_y = (0,0)
+	tile_x,tile_y = (x,y)
 	decoded_numpy_image = utils.decode_compress_ai(compressai_model,compressai_latent_code[(tile_x+1)*tile_y])
 
 	#base64 encoding.
@@ -82,7 +85,12 @@ def decode_compressai():
 	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
 	im_b64 = base64.b64encode(im_bytes)
 
-	return send_file(io.BytesIO(im_b64),mimetype='image/jpeg',attachment_filename="cpa_output.jpg")
+	# print(im_b64)
+	# print(im_bytes)
+	res = {"data":im_b64.hex(),"data2":im_bytes.hex()}
+	resp = Response(response=json.dumps(res),status=200,mimetype='application/json')
+	return resp
+	# return send_file(io.BytesIO(im_b64),mimetype='image/jpeg',attachment_filename="cpa_output.jpg")
 
 
 
