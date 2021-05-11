@@ -8,23 +8,26 @@ import models
 import base64
 from io import BytesIO
 from PIL import Image
+from models import cae_32
+from compressai.zoo import bmshj2018_hyperprior
 
 
 def load_cae_model(config):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
-	if config['model'] =='cae':
-		from models import cae_32
-		model = cae_32.CAE()
-
+	#if config['model'] =='cae':
+	model = cae_32.CAE()
 	state_dict = torch.load('resources/'+config['trained_path'],map_location=device)
 	model.load_state_dict(state_dict)
-	
 	model = model.to(device)
-
-	print('loading: ',config['model'])
 	model = model.eval()
-
+	print('loaded cae model')
 	return model
+
+def load_compress_ai_model(config):
+	device = 'cuda' if torch.cuda.is_available() else 'cpu'
+	net = bmshj2018_hyperprior(quality=2, pretrained=True).eval().to(device)
+	print('loaded compressai model')
+	return net
 
 
 def get_patches(config):
@@ -34,16 +37,10 @@ def get_patches(config):
 	pad = ((24, 23), (0, 0), (0, 0)) #Calculated for this image.
 	img = np.pad(img,pad,mode='edge') / 255.0
 	patches = patchify.patchify(img,config['tile_size'],step=int(config['step_size']))
-	#print('patch shape: ',patches.shape)
 
 	#We reuse these shapes:
 	with open('resources/patch_info.pkl','wb') as fout:
 		pickle.dump(patches.shape,fout)
-
-	# dummy = np.zeros_like(patches)
-	# with open('resources/patch_example.pkl','wb') as fout:
-	# 	pickle.dump(dummy,fout)
-
 	return patches
 
 def to_torch(patches):
@@ -84,7 +81,7 @@ def get_encoders_cae(model,config):
 	row,col = size[:2]
 	encoded = encoded.view(row,col,a,b,c,d)
 	
-	print("Encoders generated.")
+	print("Encoders generated for cae")
 
 	return encoded
 
@@ -123,13 +120,14 @@ def get_encoders_compress_ai(model,config):
         with torch.no_grad():
             out = model.compress(x)
         encoded.append(out)    
-    print("Encoders generated.")
+    print("Encoders generated: compressai")
 
     return encoded
 
 def decode_compress_ai(model,latent):
 	with torch.no_grad():
 		output = model.decompress(latent['strings'],latent['shape'])
+		output = output['x_hat']
 	output_tile = to_numpy(output)
 	output_tile = output_tile * 255
 	output_tile = output_tile.astype(np.uint8)
@@ -158,12 +156,11 @@ def decode_all_compress_ai(encoders,model,config):
     pil_img = Image.fromarray(out_img)
     pil_img.save('resources/out_decoded.jpg')
 
+
 if __name__ =='__main__':
 	with open('config.yaml') as fout:
 	  config = yaml.load(fout,Loader=yaml.FullLoader) 
 
-	#patches = get_patches(config)
-	#patches = to_torch(patches)
 	model = load_cae_model(config)
 	encoders = get_encoders(model,config)
 

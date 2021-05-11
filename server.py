@@ -16,6 +16,8 @@ import base64
 from io import BytesIO
 from PIL import Image
 
+from compressai.zoo import bmshj2018_hyperprior
+
 #app = Flask(__name__,template_folder='.')
 app = Flask(__name__)
 
@@ -23,9 +25,10 @@ with open('config.yaml') as fout:
   config = yaml.load(fout,Loader=yaml.FullLoader) 
 
 cae_model = utils.load_cae_model(config)
-cae_latent_code = utils.get_encoders(model,config)
+cae_latent_code = utils.get_encoders_cae(cae_model,config)
 
-
+compressai_model = utils.load_compress_ai_model(config)
+compressai_latent_code = utils.get_encoders_compress_ai(compressai_model,config)
 
 
 @app.route('/')
@@ -40,7 +43,7 @@ def decode_cae():
 	#tile_x,tile_y = tile_coord
 
 	tile_x,tile_y = (0,0)
-	decoded_numpy_image = utils.decode(model,cae_latent_code[tile_x][tile_y])
+	decoded_numpy_image = utils.decode_cae(cae_model,cae_latent_code[tile_x][tile_y])
 
 	#base64 encoding.
 	pil_img = Image.fromarray(decoded_numpy_image)
@@ -52,6 +55,25 @@ def decode_cae():
 	return im_b64
 
 
+@app.route('/decode_compressai')
+def decode_compressai():
+	#API for decoding.
+
+	#tile_coord = request.args.get('coordinates').strip()
+	#tile_x,tile_y = tile_coord
+
+	tile_x,tile_y = (0,0)
+	decoded_numpy_image = utils.decode_compress_ai(compressai_model,compressai_latent_code[(tile_x+1)*tile_y])
+
+	#base64 encoding.
+	pil_img = Image.fromarray(decoded_numpy_image)
+	im_file = BytesIO()
+	pil_img.save(im_file, format="JPEG")
+	im_bytes = im_file.getvalue()  # im_bytes: image in binary format.
+	im_b64 = base64.b64encode(im_bytes)
+
+	return im_b64
+
 
 if __name__ == "__main__":
-  app.run(debug=True,port=8000)
+  app.run(debug=False,port=8000)

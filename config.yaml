@@ -13,8 +13,6 @@ final_img_size:
 patch_tile_size:
   !!python/tuple [33,32]
 
-model:
-  cae
 trained_path:
   cae_trained.pth
 

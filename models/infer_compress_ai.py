@@ -124,4 +124,72 @@ def generate_reconstructed_image(img):
     
     return rec_net
 
-forward("./rome.png")
+def get_patches(config):
+    pil_img = Image.open('../resources/resized_img.png')
+    pil_img = pil_img.resize(config['img_size'])
+    img = np.array(pil_img)
+    pad = ((24, 23), (0, 0), (0, 0)) #Calculated for this image.
+    img = np.pad(img,pad,mode='edge') / 255.0
+    patches = patchify.patchify(img,config['tile_size'],step=int(config['step_size']))
+    return patches
+
+def to_torch(patches):
+    patches = np.squeeze(patches)
+    patches = torch.tensor(patches)
+    w_blocks,h_blocks,tile_w,tile_h,ch = patches.shape
+    patches = patches.contiguous().view(-1,w_blocks*h_blocks,tile_w,tile_h,ch).squeeze()
+    patches = patches.permute(0,3,1,2).float()
+    return patches
+
+def to_numpy(tensor):
+    tensor = torch.squeeze(tensor).cpu().detach().permute(1,2,0).numpy()
+    return tensor
+
+
+def get_encoders(model,config):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    patches = get_patches(config)
+    size = patches.shape
+    patches = to_torch(patches)
+    encoded = []
+    for i in range(len(patches)):
+        x = patches[i].unsqueeze(0).to(device).float()
+        with torch.no_grad():
+            out = model.compress(x)
+        encoded.append(out)    
+    print("Encoders generated.")
+
+    return encoded
+
+def decode_all_comp(encoders,model,config):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu' 
+
+    decoded = []
+    for i in range(config['patch_tile_size'][0]*config['patch_tile_size'][1]):
+            with torch.no_grad():
+                out = model.decompress(encoders[i]["strings"], encoders[i]["shape"])
+            decoded.append(out['x_hat'])
+
+    decoded = torch.stack(decoded)
+    dec_shape = decoded.shape 
+    decoded = decoded.view(config['patch_tile_size'][0],config['patch_tile_size'][1],dec_shape[1],dec_shape[2],dec_shape[3],dec_shape[4])
+    decoded = decoded.permute(0,1,2,4,5,3).cpu().detach().numpy()
+
+    out_img = patchify.unpatchify(decoded,(config['img_size'][1],config['img_size'][0],3)) #opposite notation. H,W
+    out_img = out_img*255
+    out_img = out_img.astype(np.uint8)
+
+    pil_img = Image.fromarray(out_img)
+    pil_img.save('resources/out_decoded.jpg')
+
+import yaml
+import patchify
+
+with open('../config.yaml') as fout:
+  config = yaml.load(fout,Loader=yaml.FullLoader) 
+
+patches = get_patches(config)
+patches = to_torch(patches)
+
+
+#forward("../resources/resized_img.png")
