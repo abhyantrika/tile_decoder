@@ -10,17 +10,17 @@ class Viewer2 extends React.Component {
         super(props)
         this.state = {
             lensLength: 40,
-            gridXSize: 32,
-            gridYSize: 33,
+            gridXSize: 16,
+            gridYSize: 16,
             inputHeight: 500,
             inputWidth: 700,
             keepAspectRatio: true,
-            gridSquare: false,
-            lockGrid: true,
-
+            gridSquare: true,
+            lockGrid: false,
             gridWidth: 0,
             gridHeight: 0,
             current_selected: [0, 0],
+            previewBoxDims: [0, 0]
         }
         this.handleInputChange = this.handleInputChange.bind(this)
         this.renderInputImg = this.renderInputImg.bind(this)
@@ -114,8 +114,8 @@ class Viewer2 extends React.Component {
         originResizeResult.style.backgroundSize = (originalImg.width * cx) + "px " + (originalImg.height * cy) + "px";
         originResizeResult.style.backgroundPosition = "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px";
 
-
-        getImage("decode_cae", this.state.current_selected)
+        this.setState({previewBoxDims: [(originalImg.width * cx*2 ), (originalImg.height*cy*2 )]});
+        getImage("decode_cae", this.state)
             .then(response => response.json())
             .then(body => {
                 const imgHex = body['data2']
@@ -130,7 +130,7 @@ class Viewer2 extends React.Component {
             })
             .catch(err => console.error(err));
 
-        getImage("decode_compressai", this.state.current_selected)
+        getImage("decode_compressai", this.state)
             .then(response => response.json())
             .then(body => {
                 const imgHex = body['data2']
@@ -152,12 +152,12 @@ class Viewer2 extends React.Component {
             <div className="container">
                 <div className="row">
                     <div className="col--2">
-                        <h3>Project</h3>
+                        <h3>Image Reconstruction</h3>
                     </div>
 
                 </div>
                 <div className="row">
-                    <h5>Sub Title</h5>
+                    <h5>Comparing CAE with CPA</h5>
                 </div>
 
                 <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
