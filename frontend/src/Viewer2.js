@@ -1,9 +1,13 @@
 import rome from "./rome_30.jpg"
 import rome_ori from "./rome_ori.jpg"
+import rome_cae from "./out_decoded_cae.jpg"
+import rome_cpi from "./out_decoded_compressai.png"
+
 import "bootstrap/dist/css/bootstrap.css"
 import React, { Component } from 'react'
 import "./viewer.css"
 import { getImage } from "./Request"
+import Zoomer from "./Viewer3"
 
 class Viewer2 extends React.Component {
     constructor(props) {
@@ -12,7 +16,7 @@ class Viewer2 extends React.Component {
             lensLength: 40,
             gridXSize: 16,
             gridYSize: 16,
-            inputHeight: 500,
+            inputHeight: 714,
             inputWidth: 700,
             keepAspectRatio: true,
             gridSquare: true,
@@ -20,7 +24,11 @@ class Viewer2 extends React.Component {
             gridWidth: 0,
             gridHeight: 0,
             current_selected: [0, 0],
-            previewBoxDims: [0, 0]
+            previewBoxDims: [0, 0],
+            asc_ratio: 0,
+            ori_position: "0",
+            cae_url: "",
+            cpi_url: "",
         }
         this.handleInputChange = this.handleInputChange.bind(this)
         this.renderInputImg = this.renderInputImg.bind(this)
@@ -60,6 +68,7 @@ class Viewer2 extends React.Component {
 
     renderInputImg() {
         let img = document.createElement("img")
+        this.setState({ asc_ratio: img.naturalWidth / img.naturalHeight })
         img.setAttribute("src", rome)
         img.setAttribute("useMap", "mark")
         img.setAttribute("position", "absolute")
@@ -67,6 +76,9 @@ class Viewer2 extends React.Component {
         img.setAttribute("id", "inputIMG")
         if (!this.state.keepAspectRatio) {
             img.setAttribute("height", this.state.inputHeight + "px")
+        } else {
+            console.log(this.state.asc_ratio)
+            this.setState({ inputHeight: this.state.inputWidth / (img.naturalWidth / img.naturalHeight) })
         }
 
         let divNode = document.getElementById("inputImg")
@@ -114,7 +126,9 @@ class Viewer2 extends React.Component {
         originResizeResult.style.backgroundSize = (originalImg.width * cx) + "px " + (originalImg.height * cy) + "px";
         originResizeResult.style.backgroundPosition = "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px";
 
-        this.setState({previewBoxDims: [(originalImg.width * cx*2 ), (originalImg.height*cy*2 )]});
+        this.setState({ ori_position: "-" + (this.state.current_selected[1] * this.state.gridWidth * cx) + "px -" + (this.state.current_selected[0] * this.state.gridHeight * cy) + "px" })
+
+        this.setState({ previewBoxDims: [(originalImg.width * cx * 2), (originalImg.height * cy * 2)] });
         getImage("decode_cae", this.state)
             .then(response => response.json())
             .then(body => {
@@ -127,6 +141,7 @@ class Viewer2 extends React.Component {
             .then(url => {
                 console.log(url)
                 caeResult.style.backgroundImage = "url('" + url + "')";
+                this.setState({ cae_url: url })
             })
             .catch(err => console.error(err));
 
@@ -142,6 +157,7 @@ class Viewer2 extends React.Component {
             .then(url => {
                 console.log(url)
                 cpaResult.style.backgroundImage = "url('" + url + "')";
+                this.setState({ cpi_url: url })
             })
             .catch(err => console.error(err));
     }
@@ -225,6 +241,12 @@ class Viewer2 extends React.Component {
                     </div>
                 </div>
 
+                <div className="row">
+                    <div id="inputImg" style={{ marginTop: "30px", height: this.state.inputHeight }}>
+                        <img src={rome} alt="usemap" useMap="mark" width="700px" id="inputIMG" style={{ maxHeight: "100%" }} />
+                    </div>
+                </div>
+
                 <div className="row" style={{ marginTop: "30px" }}>
                     <label className="form-label">Current Zoom Level: 24.75x</label>
 
@@ -251,19 +273,9 @@ class Viewer2 extends React.Component {
                     </div>
 
                 </div>
-
-                <div id="inputImg" style={{ marginTop: "30px" }}>
-                    <img src={rome} alt="usemap" useMap="mark" width="700px" id="inputIMG" />
-                    {/* <map name="mark">
-                        <area shape="rect" coords="0,0, 250,250" alt="GFG1"
-                            style={{ border: "2px solid red", position: "absolute", width: 250, height: 250 }} onClick={() => console.log([1, 1])} />
-                        <area shape="rect" coords="250,0, 500,250" alt="GFG2"
-                            style={{ border: "2px solid red", position: "absolute", width: 250, height: 250, marginLeft: 250 }} onClick={() => console.log([1, 2])} />
-                        <area shape="rect" coords="0,250, 250,500" alt="GFG3"
-                            style={{ border: "2px solid red", position: "absolute", width: 250, height: 250, marginTop: 250 }} onClick={() => console.log([2, 1])} />
-                        <area shape="rect" coords="250,250, 500,500" alt="GFG4"
-                            style={{ border: "2px solid red", position: "absolute", width: 250, height: 250, marginLeft: 250, marginTop: 250 }} onClick={() => console.log([2, 2])} />
-                    </map> */}
+                <div className="row" style={{ marginTop: "30px" }}> <h4>Free Zooming and panning</h4></div>
+                <div className="row" style={{ marginTop: "30px", position: "absolute" }}>
+                    <Zoomer img_src={rome_ori} img_src_1={rome} img_src_2={rome_cae} img_src_3={rome_cpi} />
                 </div>
             </div >
         )

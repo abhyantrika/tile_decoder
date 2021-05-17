@@ -16,14 +16,12 @@ class Viewer extends React.Component {
     }
     imageZoom(imgID, resultID) {
         let img, lens, result, cx, cy
-        img = document.getElementById(imgID)
-        result = document.getElementById(resultID)
-
-        lens = document.createElement("div")
+        img = document.getElementById(imgID);
+        result = document.getElementById(resultID);
+        /* Create lens: */
+        lens = document.createElement("DIV");
         lens.setAttribute("class", "img-zoom-lens");
-        lens.style.width = this.state.lensLength + "px";
-        lens.style.height = this.state.lensLength + "px";
-
+        /* Insert lens: */
         img.parentElement.insertBefore(lens, img);
         /* Calculate the ratio between result DIV and lens: */
         cx = result.offsetWidth / lens.offsetWidth;
@@ -31,10 +29,9 @@ class Viewer extends React.Component {
         /* Set background properties for the result DIV */
         result.style.backgroundImage = "url('" + img.src + "')";
         result.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
-
         /* Execute a function when someone moves the cursor over the image, or the lens: */
-        lens.addEventListener("click", moveLens);
-        img.addEventListener("click", moveLens);
+        lens.addEventListener("mousemove", moveLens);
+        img.addEventListener("mousemove", moveLens);
         /* And also for touch screens: */
         lens.addEventListener("touchmove", moveLens);
         img.addEventListener("touchmove", moveLens);
@@ -87,9 +84,12 @@ class Viewer extends React.Component {
                 </div>
                 <div className="row">
                     <div class="img-zoom-container">
-                        <img id="myimage" src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/University_of_Maryland_seal.svg/1200px-University_of_Maryland_seal.svg.png" width="300" alt="inputImage" />
-                        <div id="myresult" class="img-zoom-result"></div>
+                        <img id="myimage" src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/University_of_Maryland_seal.svg/1200px-University_of_Maryland_seal.svg.png" width="500" alt="inputImage" />
                     </div>
+                </div>
+
+                <div className="row">
+                    <div id="myresult" class="img-zoom-result"></div>
                 </div>
             </div>
             // <View>

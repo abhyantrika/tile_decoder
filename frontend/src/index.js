@@ -4,12 +4,13 @@ import './index.css';
 import App from './App';
 import Viewer from "./Viewer"
 import Viewer2 from "./Viewer2"
+import Viewer3 from "./Viewer3"
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    {/* <Viewer /> */}
     <Viewer2 />
+    {/* <Viewer3 img_src="https://upload.wikimedia.org/wikipedia/en/thumb/3/3e/University_of_Maryland_seal.svg/1200px-University_of_Maryland_seal.svg.png" /> */}
   </React.StrictMode>,
   document.getElementById('root')
 );
